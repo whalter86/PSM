@@ -1,5 +1,21 @@
-function flag = writeToFile()
+function flag = writeToFile(header)
 try
+    headertext=header.headertext;
+    geneprodtext=header.geneprodtext;
+    statetext=header.statetext;
+    paramtext=header.paramtext;
+    vartext=header.vartext;
+    reactiontext=header.reactiontext;
+    functiontext=header.functiontext;
+    footertext=header.footertext;
+    
+%     general
+%     modelstates
+%     generalparamnames
+%     geneparamnames,geneparamvals
+%     interactionparamnames,interactionparamvals,
+%     paramtext
+%     statetext
     
     for i = 1:length(modelstates)
         if ismember(modelstates{i},{'RNAP','R'})
