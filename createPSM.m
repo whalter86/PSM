@@ -38,10 +38,10 @@ end
         
 
 
-%% define headers
+%% define headers (to delete)
 [headertext,statetext,paramtext,vartext,reactiontext,functiontext,footertext] = initializeHeaders(general);
 
-%% filename
+%% filename (to delete)
 if length(general.Name)<5 || ~strcmp(general.Name(end-5:end),'.txtbc')
     dotind=regexp(general.Name,'\.');
 %     dotind=strfind(general.Name,'.');
@@ -52,6 +52,10 @@ if length(general.Name)<5 || ~strcmp(general.Name(end-5:end),'.txtbc')
 else
     filename=general.Name;
 end
+
+%% get basic gene data
+[states,parameters,variables,reactions,functions]=getGeneData(general,genes);
+
 
 %% genes
 modelstates={'RNAP','R'};
@@ -244,13 +248,13 @@ end
 
 
 
-variables={'elongrate_transcr = transcr_speed / RNAP_width',...
+variablenames={'elongrate_transcr = transcr_speed / RNAP_width',...
     'elongrate_transl = transl_speed / R_width',...
     rnap_o_str,...
     r_o_str,...
     'RNAP_f = RNAP - RNAP_o',...
     'R_f = R - R_o'};
-variables=[variables,genevariables];
+variablenames=[variablenames,genevariables];
 
 
 
@@ -308,9 +312,23 @@ variables=[variables,genevariables];
 % 
 
 
+states.names=modelstates;
+states.IC=zeros(1,length(modelstates));
 
+parameters.names=[geneparamnames];
+parameters.vals=[geneparamvals];
+
+variables.names=[];
+variables.vals=[];
+
+reactions.names=[];
+reactions.vals=[];
+
+functions.names=[];
+functions.vals=[];
 
 %% write data to file
+writeToFile(general,states,parameters,variablenames,reactions,functions);
 % general
 % modelstates
 % generalparamnames
@@ -340,8 +358,8 @@ end
 %     paramtext=[paramtext;[MNparamnames{i},'=',num2str(MNparamvals(i)),' \n']];
 % end
 
-for i = 1:length(variables)
-    vartext=[vartext;[variables{i},' \n']];
+for i = 1:length(variablenames)
+    vartext=[vartext;[variablenames{i},' \n']];
 end
 
 % reactiontext=[reactiontext;['  => si :r',num2str(reactionindex),' \n']];

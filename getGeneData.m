@@ -1,0 +1,1 @@
+function [states,parameters,variables,reactions,functions]=getGeneData(general,genes)
