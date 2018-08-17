@@ -1,4 +1,4 @@
-function flag = writeToFile(general,states,parameters,variables,reactions,functions)
+function flag = writeToFile(general,geneproduction,states,parameters,variables,reactions,functions)
 try
     %% filename
     if length(general.Name)<5 || ~strcmp(general.Name(end-5:end),'.txtbc')
@@ -18,6 +18,7 @@ try
     [general.Name,' \n'];...
     '********** MODEL NOTES \n';...
     '********** MODEL STATE INFORMATION \n'};
+    geneprodtext={};
     statetext={};
     paramtext={'********** MODEL PARAMETERS \n'};
     vartext={'********** MODEL VARIABLES \n'};
@@ -31,6 +32,10 @@ try
     '\n'};
 
     %% append network specific lines
+    for i = 1:length(geneproduction.names)
+        geneprodtext=[geneprodtext;['d/dt(',geneproduction.names{i},')=',geneproduction.rhs{i},' \n']];
+    end
+    
     for i = 1:length(states.names)
         statetext=[statetext;[states.names{i},'(0)=',num2str(states.IC(i)),' \n']];
     end
@@ -45,7 +50,7 @@ try
     
     for i = 1:length(reactions.names)
         validatestring(reactions.operators{i},{'=>','<=>','<='});
-        reactiontext= [reactiontext;[reactions.products{i}, reactions.operators{i} ,reactions.educts{i},':', reactions.names{i},' \n' ]];
+        reactiontext= [reactiontext;[reactions.educts{i},' ', reactions.operators{i},' ' ,reactions.products{i},' :', reactions.names{i},' \n' ]];
         if strcmp(reactions.operators{i},'=>')
             reactiontext= [reactiontext; ['vf=',reactions.forwardrate{i}, ' \n']];
         elseif strcmp(reactions.operators{i},'<=>')

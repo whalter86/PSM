@@ -61,6 +61,7 @@ inputs=[u1];
 [modelstates,statecoding]=createPSM(general,genes);
 % [modelstates,statecoding]=createPSM(general,genes,interactions,inputs,[]);
 
+
 %% model generation
 
 model = IQMmodel([general.Name,'.txtbc']);
