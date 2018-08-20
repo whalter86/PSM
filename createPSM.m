@@ -41,6 +41,9 @@ end
 [geneproduction,states,parameters,variables,reactions,functions]=getGeneData(general,genes);
 
 
+%% incorporate genetic interactions
+[parameters,variables,functions]=getInteractionData(parameters,variables,functions,interactions,genes);
+
 
 %% write data to file
 writeToFile(general,geneproduction,states,parameters,variables,reactions,functions);

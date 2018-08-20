@@ -17,6 +17,7 @@ general.RNAP_IC           = RNAPtot; % total amount of RNAP at t=0
 general.R_IC              = Rtot; % total amount of ribosomes at t=0
 
 % gene parameters
+gBG.ID                = 'gBG'; % gene identifier
 gBG.numgenes          = 10; % genes, BN-ID 105751 %3000;  %genes, BN-ID 110942
 gBG.genelength        = 1064; %nucleotides, BN-ID 105751
 gBG.initrate_transcr  = 0.000985; %basal transcription rate
@@ -25,6 +26,7 @@ gBG.decay_RNA         = 1.518;
 gBG.decay_prot        = .01858;
 gBG.product           = 'P_BG';
 % 
+g1.ID                = 'g1'; % gene identifier
 g1.numgenes          = 1; 
 g1.genelength        = 1064;
 g1.initrate_transcr  = 0.000985; 
@@ -38,18 +40,19 @@ g1.product           = 'P1';
 genes=[gBG,g1];
 
 % genetic interactions
-% i1.Source= 'P_G2';
-% i1.SourceType= 'Protein'; % Protein or mRNA
-% i1.Target= 'P_G3';
-% i1.Mode= 'tx'; % 'tx' or 'tl'
-% i1.V = -.015;
-% i1.h = 2.1;
-% i1.K = 40;
+i1.Identifier = 'i1';
+i1.Source= 'g1'; % source gene
+i1.SourceType= 'Protein'; % Protein or mRNA
+i1.Target= 'g1'; % target gene
+i1.Mode= 'tx'; % 'tx' or 'tl' or 'direct'
+i1.ParamNames={'k1'};
+i1.ParamValues=[.000001,1];
+i1.Fun='-k1 * u1';  %function in parameters and u1, u2 ,..., un 
 
-interactions=[];
+interactions=[i1];
 
 % % Inputs
-u1.Identifyer= 'u1';
+u1.Identifier= 'u1';
 u1.Target= 'P1';
 u1.Mode= 'tx'; % 'tx' or 'tl'
 u1.ParamNames={'P1','P2'};
@@ -58,7 +61,7 @@ u1.Fun='P1*cos(P2*t)';
 
 inputs=[u1];
 
-[modelstates,statecoding]=createPSM(general,genes);
+[modelstates,statecoding]=createPSM(general,genes,interactions);
 % [modelstates,statecoding]=createPSM(general,genes,interactions,inputs,[]);
 
 
@@ -78,12 +81,12 @@ paramnames=mexfh('parameters');
 param=mexfh('parametervalues');
 u1paramlog=ismember(paramnames,'u1_P1');
 
-%% drive into steady state
-pset=param;
-pset(u1paramlog)=0;
-tend=10000;
-simdata = mexfh(linspace(0,tend,20),ICs,pset);
-ICs=simdata.statevalues(end,:);
+% %% drive into steady state
+% pset=param;
+% pset(u1paramlog)=0;
+% tend=10000;
+% simdata = mexfh(linspace(0,tend,20),ICs,pset);
+% ICs=simdata.statevalues(end,:);
 %% simulation
 
 
@@ -130,7 +133,7 @@ numrow=length(genes);
 numcol=3;
 
 for i = 1:length(genes)
-    [~,lam]= ismember(simdata.variables,['g',num2str(i),'_init_transcr']);
+    [~,lam]= ismember(simdata.variables,[genes(i).ID,'_init_transcr']);
     lamlog=logical(lam);
     lamsim=simdata.variablevalues(:,lamlog);
     

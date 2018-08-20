@@ -62,12 +62,8 @@ end
 
 %% get gene parameternames
 geneparams=fieldnames(genes);
-geneparams(ismember(geneparams,'product'))=[]; %remove product parameter
+geneparams(ismember(geneparams,{'product','ID'}))=[]; %remove product parameter
 
-
-
-geneparamnames={};
-geneparamvals=[];
 rnap_o_str='';
 r_o_str='';
 
@@ -76,14 +72,14 @@ for i = 1:length(genes)
     %%% states
     geneslots(i)=round(genes(i).genelength/general.RNAP_width)+1;
     RNAslots(i)=round(genes(i).genelength/general.R_width)+1;
-    rnap_o_str=[rnap_o_str,'g',num2str(i),'_numgenes *('];
+    rnap_o_str=[rnap_o_str,genes(i).ID,'_numgenes *('];
     for j =1:geneslots(i)
         states.names=[states.names;['x',num2str(i),'_',num2str(j)]];
         states.code=[states.code;i,1];
         rnap_o_str=[rnap_o_str,states.names{end},'+'];
     end
     rnap_o_str(end)=')';
-    states.names=[states.names;['mRNA_g',num2str(i)]];
+    states.names=[states.names;['mRNA_',genes(i).ID]];
     states.code=[states.code;i,2];
     r_o_str=[r_o_str,states.names{end},' *('];
     for j =1:RNAslots(i)
@@ -107,28 +103,28 @@ for i = 1:length(genes)
 
     %%% gene parameters
     for j = 1:length(geneparams)
-        newparamstring=['g',num2str(i),'_',geneparams{j}];
+        newparamstring=[genes(i).ID,'_',geneparams{j}];
         newparamval=genes(i).(geneparams{j});
         parameters.names=[parameters.names;newparamstring];
         parameters.vals=[parameters.vals;newparamval];
     end
 
     %%% gene variables
-    variables.names=[variables.names;['g',num2str(i),'_init_transcr']];       
-    variables.names=[variables.names;['g',num2str(i),'_init_transl']];
+    variables.names=[variables.names;[genes(i).ID,'_init_transcr']];       
+    variables.names=[variables.names;[genes(i).ID,'_init_transl']];
     variables.names=[variables.names;['c',genes(i).product]];
-    variables.vals=[variables.vals;['max(g',num2str(i),'_initrate_transcr',',0)']];
-    variables.vals=[variables.vals;['max(g',num2str(i),'_initrate_transl',',0)']];
+    variables.vals=[variables.vals;['max(',genes(i).ID,'_initrate_transcr',',0)']];
+    variables.vals=[variables.vals;['max(',genes(i).ID,'_initrate_transl',',0)']];
     variables.vals=[variables.vals;['( ',genes(i).product ,'/(Vcell*NA))*1000']];
     
     
     %%% set reactions
     %%% mRNA degradation
     reactions.names=[reactions.names;['r',num2str(reactionindex)]];
-    reactions.educts=[reactions.educts;[' mRNA_g',num2str(i)]];
+    reactions.educts=[reactions.educts;[' mRNA_',genes(i).ID]];
     reactions.operators=[reactions.operators;'=>'];
     reactions.products=[reactions.products;' '];
-    reactions.forwardrate=[reactions.forwardrate;['(dilution + g',num2str(i),'_decay_RNA) * mRNA_g',num2str(i)]];
+    reactions.forwardrate=[reactions.forwardrate;['(dilution + ',genes(i).ID,'_decay_RNA) * mRNA_',genes(i).ID]];
     reactions.backwardrate=[reactions.backwardrate;' '];
     reactionindex=reactionindex+1;
     
@@ -137,7 +133,7 @@ for i = 1:length(genes)
     reactions.educts=[reactions.educts;' '];
     reactions.operators=[reactions.operators;'=>'];
     reactions.products=[reactions.products;['x',num2str(i),'_1']];
-    reactions.forwardrate=[reactions.forwardrate;['g',num2str(i),'_init_transcr * RNAP_f * (1-x',num2str(i),'_1)']];
+    reactions.forwardrate=[reactions.forwardrate;[genes(i).ID,'_init_transcr * RNAP_f * (1-x',num2str(i),'_1)']];
     reactions.backwardrate=[reactions.backwardrate;' '];
     reactionindex=reactionindex+1;
     
@@ -155,7 +151,7 @@ for i = 1:length(genes)
     reactions.names=[reactions.names;['r',num2str(reactionindex)]];
     reactions.educts=[reactions.educts;['x',num2str(i),'_',num2str(geneslots(i))]];
     reactions.operators=[reactions.operators;'=>'];
-    reactions.products=[reactions.products;[num2str(genes(i).numgenes),'*mRNA_g',num2str(i)]];
+    reactions.products=[reactions.products;[num2str(genes(i).numgenes),'*mRNA_',genes(i).ID]];
     reactions.forwardrate=[reactions.forwardrate;['elongrate_transcr * x',num2str(i),'_',num2str(geneslots(i))]];
     reactions.backwardrate=[reactions.backwardrate;' '];
     reactionindex=reactionindex+1;
@@ -166,7 +162,7 @@ for i = 1:length(genes)
     reactions.educts=[reactions.educts;' '];
     reactions.operators=[reactions.operators;'=>'];
     reactions.products=[reactions.products;['y',num2str(i),'_1']];
-    reactions.forwardrate=[reactions.forwardrate;['g',num2str(i),'_init_transl * R_f * (1-y',num2str(i),'_1)']];
+    reactions.forwardrate=[reactions.forwardrate;[genes(i).ID,'_init_transl * R_f * (1-y',num2str(i),'_1)']];
     reactions.backwardrate=[reactions.backwardrate;' '];
     reactionindex=reactionindex+1;
     
@@ -190,7 +186,7 @@ for i = 1:length(genes)
     reactions.backwardrate=[reactions.backwardrate;' '];
     
     geneproduction.names=[geneproduction.names;genes(i).product];
-    geneproduction.rhs=[geneproduction.rhs;[' -(dilution + g',num2str(i),'_decay_prot) *',genes(i).product,'+ mRNA_g',num2str(i),'*r',num2str(reactionindex)]];
+    geneproduction.rhs=[geneproduction.rhs;[' -(dilution + ',genes(i).ID,'_decay_prot) *',genes(i).product,'+ mRNA_',genes(i).ID,'*r',num2str(reactionindex)]];
     reactionindex=reactionindex+1;
 end
 
