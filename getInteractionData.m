@@ -1,21 +1,30 @@
 function [parameters,variables,functions]=getInteractionData(parameters,variables,functions,interactions,genes)
+% interactions(i).Identifier= 'i1';  % interaction identifier
 % interactions(i).Source= 'g1';  % source gene identifier
 % interactions(i).SourceType= 'Protein'; % Protein or mRNA
 % interactions(i).Target= 'g2'; % target gene identifier
 % interactions(i).Mode= 'tx'; % 'tx' or 'tl' 
-
+% interactions(i).ParamNames={'k1'}; 
+% interactions(i).ParamValues=[.000001,1];
+% interactions(i).Fun='-k1 * u1';
 
 %% get targets of interactions, incorporate new parameters and add interaction functions
 intertargets={};
-interactionparamnames={};
-interactionparamvals=[];
+newinteractionparamnames={};
+newinteractionparamvals=[];
 for i = 1:length(interactions)
     % get targets of interactions
     intertargets=[intertargets,interactions(i).Target];
     
+    % check interaction parameters
+    if length(interactions(i).ParamNames) ~= length(interactions(i).ParamValues)
+       error('Number of interaction parameter names and values does not match')
+    end
+    
+    interactionparamnames=strcat([interactions(i).Identifier,'_'],interactions(i).ParamNames);
     % incorporate new parameters
-    interactionparamnames=[interactionparamnames,strcat([interactions(i).Identifier,'_'],interactions(i).ParamNames)];
-    interactionparamvals=[interactionparamvals,interactions(i).ParamValues];
+    newinteractionparamnames=[newinteractionparamnames,interactionparamnames];
+    newinteractionparamvals=[newinteractionparamvals,interactions(i).ParamValues];
     
     % add interaction functions
     funpnames=strjoin(interactions(i).ParamNames,',');
@@ -49,6 +58,6 @@ for i = 1:length(interactions)
     variedString=replace(stringToVary,oldStr,newStr);
     variables.vals{varIndex}=variedString;
 end
-parameters.names=[parameters.names;interactionparamnames'];
-parameters.vals=[parameters.vals;interactionparamvals'];
+parameters.names=[parameters.names;newinteractionparamnames'];
+parameters.vals=[parameters.vals;newinteractionparamvals'];
 

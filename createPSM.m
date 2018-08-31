@@ -34,20 +34,28 @@ switch nargin
     otherwise
         warning('Too many inputs, all inputs after number 5 will be ignored')
 end
+
+%% check for standard parameters
+% todo
             
 
 
 %% get basic gene data
 [geneproduction,states,parameters,variables,reactions,functions]=getGeneData(general,genes);
-
+% todo: energy/resource dependenc
 
 %% incorporate genetic interactions
 [parameters,variables,functions]=getInteractionData(parameters,variables,functions,interactions,genes);
 
+%% incorporate inputs
+[parameters,variables,functions]=getInputData(parameters,variables,functions,inputs);
+
+%% incorporate metabolic network
+% todo
 
 %% write data to file
 writeToFile(general,geneproduction,states,parameters,variables,reactions,functions);
 
-
+%% outputs
 statenames=states.names;
 statecodes=states.code;

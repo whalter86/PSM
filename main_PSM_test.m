@@ -29,7 +29,7 @@ gBG.product           = 'P_BG';
 g1.ID                = 'g1'; % gene identifier
 g1.numgenes          = 1; 
 g1.genelength        = 1064;
-g1.initrate_transcr  = 0.000985; 
+g1.initrate_transcr  = 0; 
 g1.initrate_transl   = 0.0037;
 g1.decay_RNA         = 1.518;
 g1.decay_prot        = .01858;
@@ -44,24 +44,24 @@ i1.Identifier = 'i1';
 i1.Source= 'g1'; % source gene
 i1.SourceType= 'Protein'; % Protein or mRNA
 i1.Target= 'g1'; % target gene
-i1.Mode= 'tx'; % 'tx' or 'tl' or 'direct'
+i1.Mode= 'tx'; % 'tx' or 'tl' (or 'direct', not working yet)
 i1.ParamNames={'k1'};
-i1.ParamValues=[.000001,1];
+i1.ParamValues=[.000001];
 i1.Fun='-k1 * u1';  %function in parameters and u1, u2 ,..., un 
 
 interactions=[i1];
 
 % % Inputs
 u1.Identifier= 'u1';
-u1.Target= 'P1';
+u1.Target= 'g1';
 u1.Mode= 'tx'; % 'tx' or 'tl'
-u1.ParamNames={'P1','P2'};
-u1.ParamValues=[1e-3,0];
-u1.Fun='P1*cos(P2*t)';
+u1.ParamNames={'k1','k2'};
+u1.ParamValues=[1e-4,.1];
+u1.Fun='k1*cos(k2*t)';
 
 inputs=[u1];
 
-[modelstates,statecoding]=createPSM(general,genes,interactions);
+[modelstates,statecoding]=createPSM(general,genes,interactions,inputs);
 % [modelstates,statecoding]=createPSM(general,genes,interactions,inputs,[]);
 
 
@@ -146,10 +146,10 @@ for i = 1:length(genes)
     title('tx initiation rate')
     subplot(numrow,numcol,(i-1)*numcol+2)
     plot(tsim,simdata.statevalues(:,mrnaPG))
-    title('mRNA amount')
+    title(modelstates{mrnaPG})
     subplot(numrow,numcol,(i-1)*numcol+3)
     plot(tsim,simdata.statevalues(:,PG))
-    title('protein amount')
+    title(modelstates{PG})
     
     
 end
