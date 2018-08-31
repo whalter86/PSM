@@ -36,8 +36,37 @@ switch nargin
 end
 
 %% check for standard parameters
-% todo
-            
+generalparamnames= fieldnames(general);         
+if ~ismember('Name',generalparamnames)
+    general.Name ='PSM';
+end
+if ~ismember('RNAP_width',generalparamnames)
+    general.RNAP_width =40;
+end
+if ~ismember('R_width',generalparamnames)
+    general.R_width =76;
+end
+if ~ismember('transcr_speed',generalparamnames)
+    general.transcr_speed =3300;
+end
+if ~ismember('transl_speed',generalparamnames)
+    general.transl_speed =2970;
+end
+if ~ismember('NA',generalparamnames)
+    general.NA =6.0221e+23;
+end
+if ~ismember('Vcell',generalparamnames)
+    general.Vcell =6.7e-16;
+end
+if ~ismember('dilution',generalparamnames)
+    general.dilution =0;
+end
+if ~ismember('RNAP_IC',generalparamnames)
+    general.RNAP_IC =4600;
+end
+if ~ismember('R_IC',generalparamnames)
+    general.R_IC =39400;
+end
 
 
 %% get basic gene data
