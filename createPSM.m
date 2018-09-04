@@ -80,7 +80,7 @@ end
 [parameters,variables,functions]=getInputData(parameters,variables,functions,inputs);
 
 %% incorporate metabolic network
-% todo
+[states,parameters,reactions]=getMetabolicNetworkData(states,parameters,reactions,MN);
 
 %% write data to file
 writeToFile(general,geneproduction,states,parameters,variables,reactions,functions);

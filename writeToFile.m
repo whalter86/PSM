@@ -1,4 +1,21 @@
 function flag = writeToFile(general,geneproduction,states,parameters,variables,reactions,functions)
+
+if size(states.names,1) ~= size(states.IC,1) || size(states.names,1) ~= size(states.code,1)
+        error('Number of state names, IC or codes does not match')
+end
+if length(parameters.names) ~= length(parameters.vals)
+        error('Number of parameter names and values does not match')
+end
+if length(variables.names) ~= length(variables.vals)
+        error('Number of variable names and values does not match')
+end
+if length(reactions.names) ~= length(reactions.products) || length(reactions.names) ~= length(reactions.operators) || length(reactions.names) ~= length(reactions.educts) || length(reactions.names) ~= length(reactions.forwardrate) || length(reactions.names) ~= length(reactions.backwardrate)
+        error('Number of reaction parameters does not match')
+end
+if size(functions.names,1) ~= size(functions.arguments,1) || size(functions.names,1) ~= size(functions.vals,1)
+        error('Number of functino parameters does not match')
+end
+
 try
     %% filename
     if length(general.Name)<5 || ~strcmp(general.Name(end-5:end),'.txtbc')

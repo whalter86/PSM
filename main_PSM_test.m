@@ -61,7 +61,20 @@ u1.Fun='k1*cos(k2*t)';
 
 inputs=[u1];
 
-[modelstates,statecoding]=createPSM(general,genes,interactions,inputs);
+% Metabolic network
+% example: A->B     B->C   , first reaction catalyzed by P1, second
+% spontaneous
+MN(1).S           = [-1 0; 1 -1; 0 1];  % Stoichometric matrix (# metabolites x # reactions)
+MN(1).Names       = {'cA','cB', 'cC'};  % Name of metabolites 
+MN(1).IC          = [1,0,0];
+MN(1).ParamNames  = {'vP1_kcatA','vP1_KM','vconstC'};  % Parameter Names 
+MN(1).ParamValues = [1e2,0.0017,1e3];  % Parameter values 
+MN(1).Fun         = {'vP1_kcatA*cP1*cA / (vP1_KM+cA)','vconstC* cB '};
+
+
+
+
+[modelstates,statecoding]=createPSM(general,genes,interactions,inputs,MN);
 % [modelstates,statecoding]=createPSM(general,genes,interactions,inputs,[]);
 
 
@@ -154,7 +167,19 @@ for i = 1:length(genes)
     
 end
 
-
+%%% metabolites
+figure('Name','metabolites')
+numrow=length(MN.Names);
+numcol=1;
+for i = 1:length(MN.Names)
+    [~,Mind]= ismember(modelstates,MN.Names{i});
+    Mlog=logical(Mind);
+    subplot(numrow,numcol,i)
+    hold all
+    plot(tsim,simdata.statevalues(:,Mlog))
+    plot([tsim(1),tsim(end)],[1,1]*simdata.statevalues(1,Mlog),'r--')
+    title(MN.Names{i})
+end
 % %%
 % g2dnalog=statecoding(:,1)==2&statecoding(:,2)==1;
 % g2dnanames=modelstates(g2dnalog);
