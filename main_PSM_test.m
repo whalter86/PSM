@@ -61,6 +61,9 @@ u1.Fun='k1*cos(k2*t)';
 
 inputs=[u1];
 
+% attention! Units will not be adapted yet!
+MN_test=convertSBMLMN('BIOMD0000000051.txt');
+
 % Metabolic network
 % example: A->B     B->C   , first reaction catalyzed by P1, second
 % spontaneous
