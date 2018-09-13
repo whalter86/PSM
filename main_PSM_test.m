@@ -34,17 +34,25 @@ g1.initrate_transl   = 0.0037;
 g1.decay_RNA         = 1.518;
 g1.decay_prot        = .01858;
 g1.product           = 'P1';
+% 
+g2.ID                = 'g2'; % gene identifier
+g2.numgenes          = 1; 
+g2.genelength        = 1064;
+g2.initrate_transcr  = 0.000985; 
+g2.initrate_transl   = 0.0037;
+g2.decay_RNA         = 1.518;
+g2.decay_prot        = .01858;
+g2.product           = 'P2';
 
 
+genes=[gBG,g1,g2];
 
-genes=[gBG,g1];
-
-% genetic interactions
+% genetic network interactions
 i1.Identifier = 'i1';
 i1.Source= 'g1'; % source gene
 i1.SourceType= 'Protein'; % Protein or mRNA
 i1.Target= 'g1'; % target gene
-i1.Mode= 'tx'; % 'tx' or 'tl' (or 'direct', not working yet)
+i1.Mode= 'tx'; % 'tx' or 'tl' (for direct interactions between Proteins or mRNA, use metabolic network)
 i1.ParamNames={'k1'};
 i1.ParamValues=[.000001];
 i1.Fun='-k1 * u1';  %function in parameters and u1, u2 ,..., un 
@@ -74,7 +82,14 @@ MN(1).ParamNames  = {'vP1_kcatA','vP1_KM','vconstC'};  % Parameter Names
 MN(1).ParamValues = [1e2,0.0017,1e3];  % Parameter values 
 MN(1).Fun         = {'vP1_kcatA*cP1*cA / (vP1_KM+cA)','vconstC* cB '};
 
-
+% direct Interactions between proteins
+% example: P1 + P2 <-> P1_P2 with degradation reactions
+MN(2).S           = [[-1;-1;1],[1;1;-1],[1;0;-1],[0;1;-1]];  % Stoichometric matrix (# metabolites x # reactions)
+MN(2).Names       = {'P1','P2', 'P1_P2'};  % Name of metabolites 
+MN(2).IC          = [0,0,0];
+MN(2).ParamNames  = {'kfP1P2','kbP1P2'};  % Parameter Names 
+MN(2).ParamValues = [1e3,1e2];  % Parameter values 
+MN(2).Fun         = {'kfP1P2*P1*P2','kbP1P2*P1_P2','.01858 * P1_P2','.01858 * P1_P2'};
 
 
 [modelstates,statecoding]=createPSM(general,genes,interactions,inputs,MN);
@@ -170,18 +185,19 @@ for i = 1:length(genes)
     
 end
 
-%%% metabolites
-figure('Name','metabolites')
-numrow=length(MN.Names);
+%%% metabolites and protein complexes
+figure('Name','metabolites and protein complexes')
+statestoplot=modelstates(statecoding(:,2)==5);
+numrow=length(statestoplot);
 numcol=1;
-for i = 1:length(MN.Names)
-    [~,Mind]= ismember(modelstates,MN.Names{i});
+for i = 1:length(statestoplot)
+    [~,Mind]= ismember(modelstates,statestoplot{i});
     Mlog=logical(Mind);
     subplot(numrow,numcol,i)
     hold all
     plot(tsim,simdata.statevalues(:,Mlog))
     plot([tsim(1),tsim(end)],[1,1]*simdata.statevalues(1,Mlog),'r--')
-    title(MN.Names{i})
+    title(statestoplot{i})
 end
 % %%
 % g2dnalog=statecoding(:,1)==2&statecoding(:,2)==1;

@@ -7,36 +7,64 @@ function [states,parameters,reactions]=getMetabolicNetworkData(states,parameters
 % MN(i).ParamValues = [1e-2,0.0017];  % Parameter values 
 % MN(i).Fun         = {'kcat*cEnzyme*A / (KM+A)'};  % reaction function
 
+newMNparamnames={};
+newMNparamvals=[];
+newMNstateNames={};
+newMNstateIC=[];
 
-if ~isempty(MN)
-    if size(MN.ParamNames,1)>size(MN.ParamNames,2)
-        newMNparamnames=MN.ParamNames;
+
+for m=1:length(MN)
+    if size(MN(m).ParamNames,1)>size(MN(m).ParamNames,2)
+        newMNparamnames=[newMNparamnames;MN(m).ParamNames];
     else
-        newMNparamnames=MN.ParamNames';
+        newMNparamnames=[newMNparamnames;MN(m).ParamNames'];
     end
-    
-    if size(MN.ParamValues,1)>size(MN.ParamValues,2)
-        newMNparamvals=MN.ParamValues;
+
+    if size(MN(m).ParamValues,1)>size(MN(m).ParamValues,2)
+        newMNparamvals=[newMNparamvals;MN(m).ParamValues];
     else
-        newMNparamvals=MN.ParamValues';
+        newMNparamvals=[newMNparamvals;MN(m).ParamValues'];
     end    
-        
-    if size(MN.Names,1)>size(MN.Names,2)
-        newMNstateNames=MN.Names;
+
+    if size(MN(m).Names,1)>size(MN(m).Names,2)
+        newMNstateNames=[newMNstateNames;MN(m).Names];
     else
-        newMNstateNames=MN.Names';
+        newMNstateNames=[newMNstateNames;MN(m).Names'];
     end
-    
-    if size(MN.IC,1)>size(MN.IC,2)
-        newMNstateIC=MN.IC;
+
+    if size(MN(m).IC,1)>size(MN(m).IC,2)
+        newMNstateIC=[newMNstateIC;MN(m).IC];
     else
-        newMNstateIC=MN.IC';
-    end    
-else
-    newMNparamnames={};
-    newMNparamvals=[];
-    newMNstateNames={};
-    newMNstateIC=[];
+        newMNstateIC=[newMNstateIC;MN(m).IC'];
+    end
+end
+
+%% check for duplicates
+
+[newMNparamnames,ind_unique_param]=unique(newMNparamnames,'stable');
+if length(newMNparamnames) ~= length(newMNparamvals) 
+    warning('Duplicates found in parameter names. Duplicate entries will be neglected!');
+    newMNparamvals=newMNparamvals(ind_unique_param);
+end
+
+[newMNstateNames,ind_unique_states]=unique(newMNstateNames,'stable');
+if length(newMNstateNames) ~= length(newMNstateIC) 
+    warning('Duplicates found in state names. Duplicate entries will be neglected!');
+    newMNstateIC=newMNstateIC(ind_unique_states);
+end
+
+ind_exist_states=ismember(newMNstateNames,states.names);
+if sum(ind_exist_states)~=0
+    warning('Some states already exist, initial conditions will be neglected')
+    newMNstateNames(ind_exist_states)=[];
+    newMNstateIC(ind_exist_states)=[];
+end
+
+ind_exist_param=ismember(newMNparamnames,parameters.names);
+if sum(ind_exist_param)~=0
+    warning('Duplicates found in parameter names. Duplicate entries will be neglected!');
+    newMNparamnames(ind_exist_param)=[];
+    newMNparamvals(ind_exist_param)=[];
 end
 
 
@@ -47,83 +75,41 @@ parameters.names=[parameters.names;newMNparamnames];
 parameters.vals=[parameters.vals;newMNparamvals];
 
 
-numofreactions=size(MN.S,2);
 MNreactionindex=1;
-for i = 1: numofreactions
-    substrateindices=MN.S(:,i)<0;
-    productindices=MN.S(:,i)>0;
-    substrates=MN.Names(substrateindices');
-    subsSfakt=-MN.S(substrateindices,i);
-    products=MN.Names(productindices');
-    prodSfakt=MN.S(productindices,i);
-    
-    if isempty(substrates)
-        substratestring=' ';
-    else
-        substratestring=[num2str(subsSfakt(1)),'*',substrates{1}];
-        for j =2:length(substrates)
-            substratestring=[substratestring,' + ',num2str(subsSfakt(j)),'*',substrates{j}];
+for m=1:length(MN)
+    numofreactions=size(MN(m).S,2);
+    for i = 1: numofreactions
+        substrateindices=MN(m).S(:,i)<0;
+        productindices=MN(m).S(:,i)>0;
+        substrates=MN(m).Names(substrateindices');
+        subsSfakt=-MN(m).S(substrateindices,i);
+        products=MN(m).Names(productindices');
+        prodSfakt=MN(m).S(productindices,i);
+
+        if isempty(substrates)
+            substratestring=' ';
+        else
+            substratestring=[num2str(subsSfakt(1)),'*',substrates{1}];
+            for j =2:length(substrates)
+                substratestring=[substratestring,' + ',num2str(subsSfakt(j)),'*',substrates{j}];
+            end
         end
-    end
-    
-    if isempty(products)
-        productstring=' ';
-    else
-        productstring=[num2str(prodSfakt(1)),'*',products{1}];
-        for j =2:length(products)
-            productstring=[productstring,' + ',num2str(prodSfakt(j)),'*',products{j}];
+
+        if isempty(products)
+            productstring=' ';
+        else
+            productstring=[num2str(prodSfakt(1)),'*',products{1}];
+            for j =2:length(products)
+                productstring=[productstring,' + ',num2str(prodSfakt(j)),'*',products{j}];
+            end
         end
+
+        reactions.names=[reactions.names;['r_MN',num2str(MNreactionindex)]];
+        reactions.educts=[reactions.educts;substratestring];
+        reactions.operators=[reactions.operators;'=>'];
+        reactions.products=[reactions.products;productstring];
+        reactions.forwardrate=[reactions.forwardrate;MN(m).Fun{i}];
+        reactions.backwardrate=[reactions.backwardrate;' '];
+        MNreactionindex=MNreactionindex+1;
     end
-    
-    reactions.names=[reactions.names;['r_MN',num2str(MNreactionindex)]];
-    reactions.educts=[reactions.educts;substratestring];
-    reactions.operators=[reactions.operators;'=>'];
-    reactions.products=[reactions.products;productstring];
-    reactions.forwardrate=[reactions.forwardrate;MN.Fun{i}];
-    reactions.backwardrate=[reactions.backwardrate;' '];
-    MNreactionindex=MNreactionindex+1;
 end
-% 
-% 
-% %% get targets of inputs, incorporate new parameters and add input functions
-% intargets={};
-% newinputparamnames={};
-% newinputparamvals=[];
-% for i = 1:length(inputs)
-%     % get targets of inputs
-%     intargets=[intargets,inputs(i).Target];
-%     
-%     % check interaction parameters
-%     if length(inputs(i).ParamNames) ~= length(inputs(i).ParamValues)
-%        error('Number of input parameter names and values does not match')
-%     end
-%     inputparamnames=strcat([inputs(i).Identifier,'_'],inputs(i).ParamNames);
-%     % incorporate new parameters
-%     newinputparamnames=[newinputparamnames,inputparamnames];
-%     newinputparamvals=[newinputparamvals,inputs(i).ParamValues];
-%     
-%     % add input functions
-%     funpnames=strjoin(inputs(i).ParamNames,',');
-%     functions.names=[functions.names;inputs(i).Identifier];
-%     functions.arguments=[functions.arguments;strjoin({'t',funpnames},',')];
-%     functions.vals=[functions.vals;inputs(i).Fun];
-%     
-%     % adapt variables
-%     if strcmp(inputs(i).Mode,'tx')
-%         targetName=[inputs(i).Target,'_init_transcr'];
-%     elseif strcmp(inputs(i).Mode,'tl')
-%         targetName=[inputs(i).Target,'_init_transl'];
-%     else
-%         error('wrong input');
-%     end
-%     
-%     varIndex=strcmp(variables.names,targetName);
-%     stringToVary=variables.vals{varIndex};
-%     oldStr=regexp(stringToVary,'max\((.*?),0\)','tokens','once');
-%     oldStr=oldStr{1};
-%     newStr=[oldStr,' + ',inputs(i).Identifier,'(',strjoin({'time',inputparamnames},','),')'];
-%     variedString=replace(stringToVary,oldStr,newStr);
-%     variables.vals{varIndex}=variedString;
-% end
-% parameters.names=[parameters.names;newinputparamnames'];
-% parameters.vals=[parameters.vals;newinputparamvals'];

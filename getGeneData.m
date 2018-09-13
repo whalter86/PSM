@@ -184,9 +184,29 @@ for i = 1:length(genes)
     reactions.products=[reactions.products;' '];
     reactions.forwardrate=[reactions.forwardrate;['elongrate_transl * y',num2str(i),'_',num2str(RNAslots(i))]];
     reactions.backwardrate=[reactions.backwardrate;' '];
+    reactionindex=reactionindex+1;
     
-    geneproduction.names=[geneproduction.names;genes(i).product];
-    geneproduction.rhs=[geneproduction.rhs;[' -(dilution + ',genes(i).ID,'_decay_prot) *',genes(i).product,'+ mRNA_',genes(i).ID,'*r',num2str(reactionindex)]];
+    
+%     geneproduction.names=[geneproduction.names;genes(i).product];
+%     geneproduction.rhs=[geneproduction.rhs;[' -(dilution + ',genes(i).ID,'_decay_prot) *',genes(i).product,'+ mRNA_',genes(i).ID,'*r',num2str(reactionindex)]];
+    
+    
+    %%% protein production
+    reactions.names=[reactions.names;['r',num2str(reactionindex)]];
+    reactions.educts=[reactions.educts;' '];
+    reactions.operators=[reactions.operators;'=>'];
+    reactions.products=[reactions.products;genes(i).product];
+    reactions.forwardrate=[reactions.forwardrate;['mRNA_',genes(i).ID,'*elongrate_transl * y',num2str(i),'_',num2str(RNAslots(i))]];
+    reactions.backwardrate=[reactions.backwardrate;' '];
+    reactionindex=reactionindex+1;
+    
+    %%% degradation and dilution
+    reactions.names=[reactions.names;['r',num2str(reactionindex)]];
+    reactions.educts=[reactions.educts;genes(i).product];
+    reactions.operators=[reactions.operators;'=>'];
+    reactions.products=[reactions.products;' '];
+    reactions.forwardrate=[reactions.forwardrate;['(dilution + ',genes(i).ID,'_decay_prot)*',genes(i).product]];
+    reactions.backwardrate=[reactions.backwardrate;' '];
     reactionindex=reactionindex+1;
 end
 
