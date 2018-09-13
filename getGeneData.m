@@ -32,7 +32,7 @@ functions.vals={};
 %% get general parameters
 generalparamnames= fieldnames(general);
 % remove Name and IC parameters
-generalparamnames(ismember(generalparamnames,{'Name','RNAP_IC','R_IC'}))=[]; 
+generalparamnames(ismember(generalparamnames,{'Name','RNAP_IC','R_IC','AGTP_IC','CUTP_IC','AA_IC'}))=[]; 
 % set default dilution parameter if not exists
 if ~ismember('dilution',generalparamnames)
     general.dilution=0;
@@ -58,6 +58,22 @@ if ~ismember('R',geneproducts)
     states.names=[states.names;'R'];
     states.code=[states.code;[0 4]];
 end
+
+%% include energy resources
+states.names=[states.names;'AGTP'];
+states.code=[states.code;[0 4]];
+states.names=[states.names;'CUTP'];
+states.code=[states.code;[0 4]];
+states.names=[states.names;'AA'];
+states.code=[states.code;[0 4]];
+% if ~general.Consumption_flag
+%     geneproduction.names=[geneproduction.names;'AGTP'];
+%     geneproduction.rhs=[geneproduction.rhs;'0'];
+%     geneproduction.names=[geneproduction.names;'CUTP'];
+%     geneproduction.rhs=[geneproduction.rhs;'0'];
+%     geneproduction.names=[geneproduction.names;'AA'];
+%     geneproduction.rhs=[geneproduction.rhs;'0'];
+% end
 
 
 %% get gene parameternames
@@ -137,7 +153,8 @@ for i = 1:length(genes)
     reactions.backwardrate=[reactions.backwardrate;' '];
     reactionindex=reactionindex+1;
     
-    %%% transcription elongation
+    
+    %%% transcription elongation 
     for j =1:geneslots(i)-1
         reactions.names=[reactions.names;['r',num2str(reactionindex)]];
         reactions.educts=[reactions.educts;['x',num2str(i),'_',num2str(j)]];
@@ -146,8 +163,16 @@ for i = 1:length(genes)
         reactions.forwardrate=[reactions.forwardrate;['elongrate_transcr * x',num2str(i),'_',num2str(j),' * (1-x',num2str(i),'_',num2str(j+1),')']];
         reactions.backwardrate=[reactions.backwardrate;' '];
         reactionindex=reactionindex+1;
+        %%% (including energy consumption)
+        reactions.names=[reactions.names;['r',num2str(reactionindex)]];
+        reactions.educts=[reactions.educts;['AGTP + CUTP']];
+        reactions.operators=[reactions.operators;'=>'];
+        reactions.products=[reactions.products;' '];
+        reactions.forwardrate=[reactions.forwardrate;[num2str(genes(i).numgenes),'*Consumption_flag*1/2*RNAP_width*elongrate_transcr * x',num2str(i),'_',num2str(j),' * (1-x',num2str(i),'_',num2str(j+1),')']];
+        reactions.backwardrate=[reactions.backwardrate;' '];
+        reactionindex=reactionindex+1;
     end
-    %%% transcription termination
+    %%% transcription termination 
     reactions.names=[reactions.names;['r',num2str(reactionindex)]];
     reactions.educts=[reactions.educts;['x',num2str(i),'_',num2str(geneslots(i))]];
     reactions.operators=[reactions.operators;'=>'];
@@ -155,7 +180,14 @@ for i = 1:length(genes)
     reactions.forwardrate=[reactions.forwardrate;['elongrate_transcr * x',num2str(i),'_',num2str(geneslots(i))]];
     reactions.backwardrate=[reactions.backwardrate;' '];
     reactionindex=reactionindex+1;
-    
+    %%% (including energy consumption)
+    reactions.names=[reactions.names;['r',num2str(reactionindex)]];
+    reactions.educts=[reactions.educts;'AGTP + CUTP'];
+    reactions.operators=[reactions.operators;'=>'];
+    reactions.products=[reactions.products;' '];
+    reactions.forwardrate=[reactions.forwardrate;[num2str(genes(i).numgenes),'*Consumption_flag*1/2*RNAP_width*elongrate_transcr * x',num2str(i),'_',num2str(geneslots(i))]];
+    reactions.backwardrate=[reactions.backwardrate;' '];
+    reactionindex=reactionindex+1;
     
     %%% translation initiation
     reactions.names=[reactions.names;['r',num2str(reactionindex)]];
@@ -175,6 +207,14 @@ for i = 1:length(genes)
         reactions.forwardrate=[reactions.forwardrate;['elongrate_transl * y',num2str(i),'_',num2str(j),' * (1-y',num2str(i),'_',num2str(j+1),')']];
         reactions.backwardrate=[reactions.backwardrate;' '];
         reactionindex=reactionindex+1;
+    %%% (including energy consumption)
+        reactions.names=[reactions.names;['r',num2str(reactionindex)]];
+        reactions.educts=[reactions.educts;'AGTP + AA'];
+        reactions.operators=[reactions.operators;'=>'];
+        reactions.products=[reactions.products;' '];
+        reactions.forwardrate=[reactions.forwardrate;['mRNA_',genes(i).ID,'*Consumption_flag*1/3*R_width*elongrate_transl * y',num2str(i),'_',num2str(j),' * (1-y',num2str(i),'_',num2str(j+1),')']];
+        reactions.backwardrate=[reactions.backwardrate;' '];
+        reactionindex=reactionindex+1;
     end 
     
     %%% translation termination
@@ -185,7 +225,14 @@ for i = 1:length(genes)
     reactions.forwardrate=[reactions.forwardrate;['elongrate_transl * y',num2str(i),'_',num2str(RNAslots(i))]];
     reactions.backwardrate=[reactions.backwardrate;' '];
     reactionindex=reactionindex+1;
-    
+    %%% (including energy consumption)
+    reactions.names=[reactions.names;['r',num2str(reactionindex)]];
+    reactions.educts=[reactions.educts;'AGTP + AA'];
+    reactions.operators=[reactions.operators;'=>'];
+    reactions.products=[reactions.products;' '];
+    reactions.forwardrate=[reactions.forwardrate;['mRNA_',genes(i).ID,'*Consumption_flag*1/3*R_width*elongrate_transl * y',num2str(i),'_',num2str(RNAslots(i))]];
+    reactions.backwardrate=[reactions.backwardrate;' '];
+    reactionindex=reactionindex+1;
     
 %     geneproduction.names=[geneproduction.names;genes(i).product];
 %     geneproduction.rhs=[geneproduction.rhs;[' -(dilution + ',genes(i).ID,'_decay_prot) *',genes(i).product,'+ mRNA_',genes(i).ID,'*r',num2str(reactionindex)]];
@@ -212,10 +259,10 @@ end
 
 %% set general variables
 variables.names=[variables.names;'elongrate_transcr'];
-variables.vals=[variables.vals; 'transcr_speed / RNAP_width'];
+variables.vals=[variables.vals; 'hillfun(1,1,AGTP_half,AGTP)*hillfun(1,1,CUTP_half,CUTP) * transcr_speed / RNAP_width'];
     
 variables.names=[variables.names;'elongrate_transl'];
-variables.vals=[variables.vals; 'transl_speed / R_width'];
+variables.vals=[variables.vals; 'hillfun(1,1,AGTP_half,AGTP)*hillfun(1,1,AA_half,AA) * transl_speed / R_width'];
 
 variables.names=[variables.names;'RNAP_o'];
 variables.vals=[variables.vals; rnap_o_str ];
@@ -233,6 +280,8 @@ variables.vals=[variables.vals; 'R - R_o'];
 states.IC=zeros(length(states.names),1);
 states.IC(ismember(states.names,'RNAP'))=general.RNAP_IC;
 states.IC(ismember(states.names,'R'))=general.R_IC;
-
+states.IC(ismember(states.names,'AGTP'))=general.AGTP_IC;
+states.IC(ismember(states.names,'CUTP'))=general.CUTP_IC;
+states.IC(ismember(states.names,'AA'))=general.AA_IC;
 
 

@@ -11,14 +11,22 @@ general.R_width           = 76; %nucleotides, BN-ID 100121, (checked)
 general.transcr_speed     = 3300 ; %nucleotides/min, BN-ID 111871 (checked)
 general.transl_speed      = 2970; %nucleotides/min, BN-ID 100059 (checked)
 general.NA                = 6.0221e+23; %avogadro number
-general.Vcell             = 6.7e-16; %cell volume
+general.Vcell             = 6.7e-16; %cell volume in L
 general.dilution          = 0; %growth rate
 general.RNAP_IC           = RNAPtot; % total amount of RNAP at t=0
 general.R_IC              = Rtot; % total amount of ribosomes at t=0
+general.AGTP_IC           = 1.5e-3 * 2 * general.Vcell * general.NA; % ATP and GTP are at 1.5mM each (JoVE) (TXTL toolbox)
+general.CUTP_IC           = 0.9e-3 * 2 * general.Vcell * general.NA; % CTP and UTP are at 0.9mM each (JovE) (TXTL toolbox)
+general.AA_IC             = 30e-3 * general.Vcell * general.NA; % 30mM (JoVE) (TXTL toolbox)
+general.AGTP_half         = 500*general.RNAP_IC; % guessed
+general.CUTP_half         = 300*general.RNAP_IC; % guessed
+general.AA_half           = 500*general.R_IC; % guessed
+general.Consumption_flag  = 0; % if 0: resource consumption is neglected, if 1: depletion of resources is switched on
+
 
 % gene parameters
 gBG.ID                = 'gBG'; % gene identifier
-gBG.numgenes          = 10; % genes, BN-ID 105751 %3000;  %genes, BN-ID 110942
+gBG.numgenes          = 3000; % genes, BN-ID 105751 %3000;  %genes, BN-ID 110942
 gBG.genelength        = 1064; %nucleotides, BN-ID 105751
 gBG.initrate_transcr  = 0.000985; %basal transcription rate
 gBG.initrate_transl   = 0.0037; %basal translation rate
@@ -156,6 +164,18 @@ Rolog=logical(Roind);
 RNAPactsim=simdata.variablevalues(:,RNAPolog)./RNAPsim;
 Ractsim=simdata.variablevalues(:,Rolog)./Rsim;
 
+[~,AGTPind]= ismember(modelstates,'AGTP');
+AGTPlog=logical(AGTPind);
+AGTPsim=simdata.statevalues(:,AGTPlog);
+
+[~,CUTPind]= ismember(modelstates,'CUTP');
+CUTPlog=logical(CUTPind);
+CUTPsim=simdata.statevalues(:,CUTPlog);
+
+[~,AAind]= ismember(modelstates,'AA');
+AAlog=logical(AAind);
+AAsim=simdata.statevalues(:,AAlog);
+
 figure
 subplot(2,1,1)
 hold all
@@ -165,6 +185,21 @@ subplot(2,1,2)
 hold all
 plot(tsim,Ractsim)
 title('active ribosomes')
+
+figure
+subplot(3,1,1)
+hold all
+plot(tsim,AGTPsim)
+title('AGTP')
+subplot(3,1,2)
+hold all
+plot(tsim,CUTPsim)
+title('CUTP')
+subplot(3,1,3)
+hold all
+plot(tsim,AAsim)
+title('AA')
+
 
 figure('Name','geneproducts')
 numrow=length(genes);

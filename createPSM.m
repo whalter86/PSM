@@ -67,6 +67,27 @@ end
 if ~ismember('R_IC',generalparamnames)
     general.R_IC =39400;
 end
+if ~ismember('AGTP_IC',generalparamnames)
+    general.AGTP_IC = 1.5e-3 * 2 * general.Vcell * general.NA; % ATP and GTP are at 1.5mM each (JoVE) (TXTL toolbox)
+end
+if ~ismember('CUTP_IC',generalparamnames)
+    general.CUTP_IC = 0.9e-3 * 2 * general.Vcell * general.NA; % CTP and UTP are at 0.9mM each (JovE) (TXTL toolbox)
+end
+if ~ismember('AA_IC',generalparamnames)
+    general.AA_IC  = 30e-3 * general.Vcell * general.NA; % 30mM (JoVE) (TXTL toolbox)
+end
+if ~ismember('AGTP_half',generalparamnames)
+    general.AGTP_half = .1*general.RNAP_IC; % guessed
+end
+if ~ismember('CUTP_half',generalparamnames)
+    general.CUTP_half = .10*general.RNAP_IC; % guessed
+end
+if ~ismember('AA_half',generalparamnames)
+    general.AA_half     = .10*general.R_IC; % guessed
+end
+if ~ismember('Consumption_flag',generalparamnames)
+    general.Consumption_flag  = 1;
+end
 
 
 %% get basic gene data
