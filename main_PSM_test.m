@@ -91,6 +91,13 @@ MN(2).ParamNames  = {'kfP1P2','kbP1P2'};  % Parameter Names
 MN(2).ParamValues = [1e3,1e2];  % Parameter values 
 MN(2).Fun         = {'kfP1P2*P1*P2','kbP1P2*P1_P2','.01858 * P1_P2','.01858 * P1_P2'};
 
+% % mRNA-mRNA interaction with increased degradation
+MN(3).S           = [[-1;-1;1],[1;1;-1],[0;0;-1]];  % Stoichometric matrix (# metabolites x # reactions)
+MN(3).Names       = {'mRNA_g1','mRNA_g2', 'mRNA_g1_g2'};  % Name of metabolites 
+MN(3).IC          = [0,0,0];
+MN(3).ParamNames  = {'kfmg1g2','kbmg1g2'};  % Parameter Names 
+MN(3).ParamValues = [1e-1,1e-2];  % Parameter values 
+MN(3).Fun         = {'kfmg1g2*mRNA_g1*mRNA_g2','kbmg1g2*mRNA_g1_g2','3 * mRNA_g1_g2'};
 
 [modelstates,statecoding]=createPSM(general,genes,interactions,inputs,MN);
 % [modelstates,statecoding]=createPSM(general,genes,interactions,inputs,[]);
