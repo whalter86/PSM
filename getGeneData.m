@@ -259,10 +259,10 @@ end
 
 %% set general variables
 variables.names=[variables.names;'elongrate_transcr'];
-variables.vals=[variables.vals; 'hillfun(1,1,AGTP_half,AGTP)*hillfun(1,1,CUTP_half,CUTP) * transcr_speed / RNAP_width'];
+variables.vals=[variables.vals; 'hillfun(1,1,AGTP_half,max(0,AGTP))*hillfun(1,1,CUTP_half,max(0,CUTP)) * transcr_speed / RNAP_width'];
     
 variables.names=[variables.names;'elongrate_transl'];
-variables.vals=[variables.vals; 'hillfun(1,1,AGTP_half,AGTP)*hillfun(1,1,AA_half,AA) * transl_speed / R_width'];
+variables.vals=[variables.vals; 'hillfun(1,1,AGTP_half,max(0,AGTP))*hillfun(1,1,AA_half,max(0,AA)) * transl_speed / R_width'];
 
 variables.names=[variables.names;'RNAP_o'];
 variables.vals=[variables.vals; rnap_o_str ];
