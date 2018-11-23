@@ -21,8 +21,8 @@ general.AA_IC             = 30e-3 * general.Vcell * general.NA; % 30mM (JoVE) (T
 general.AGTP_half         = 500*general.RNAP_IC; % guessed
 general.CUTP_half         = 300*general.RNAP_IC; % guessed
 general.AA_half           = 500*general.R_IC; % guessed
-general.Consumption_flag  = 0; % if 0: resource consumption is neglected, if 1: depletion of resources is switched on
-
+general.Consumption_tx    = 0.1; % if 0: tx resource consumption (AGTP and CUTP) is neglected, if 1: depletion of resources is switched on
+general.Consumption_tl    = 1; % if 0: tl resource consumption (AGTP and AA) is neglected, if 1: depletion of resources is switched on
 
 % gene parameters
 gBG.ID                = 'gBG'; % gene identifier

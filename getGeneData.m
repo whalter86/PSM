@@ -168,7 +168,7 @@ for i = 1:length(genes)
         reactions.educts=[reactions.educts;['AGTP + CUTP']];
         reactions.operators=[reactions.operators;'=>'];
         reactions.products=[reactions.products;' '];
-        reactions.forwardrate=[reactions.forwardrate;[num2str(genes(i).numgenes),'*Consumption_flag*1/2*RNAP_width*elongrate_transcr * x',num2str(i),'_',num2str(j),' * (1-x',num2str(i),'_',num2str(j+1),')']];
+        reactions.forwardrate=[reactions.forwardrate;[num2str(genes(i).numgenes),'*Consumption_tx*1/2*RNAP_width*elongrate_transcr * x',num2str(i),'_',num2str(j),' * (1-x',num2str(i),'_',num2str(j+1),')']];
         reactions.backwardrate=[reactions.backwardrate;' '];
         reactionindex=reactionindex+1;
     end
@@ -185,7 +185,7 @@ for i = 1:length(genes)
     reactions.educts=[reactions.educts;'AGTP + CUTP'];
     reactions.operators=[reactions.operators;'=>'];
     reactions.products=[reactions.products;' '];
-    reactions.forwardrate=[reactions.forwardrate;[num2str(genes(i).numgenes),'*Consumption_flag*1/2*RNAP_width*elongrate_transcr * x',num2str(i),'_',num2str(geneslots(i))]];
+    reactions.forwardrate=[reactions.forwardrate;[num2str(genes(i).numgenes),'*Consumption_tx*1/2*RNAP_width*elongrate_transcr * x',num2str(i),'_',num2str(geneslots(i))]];
     reactions.backwardrate=[reactions.backwardrate;' '];
     reactionindex=reactionindex+1;
     
@@ -212,7 +212,7 @@ for i = 1:length(genes)
         reactions.educts=[reactions.educts;'AGTP + AA'];
         reactions.operators=[reactions.operators;'=>'];
         reactions.products=[reactions.products;' '];
-        reactions.forwardrate=[reactions.forwardrate;['mRNA_',genes(i).ID,'*Consumption_flag*1/3*R_width*elongrate_transl * y',num2str(i),'_',num2str(j),' * (1-y',num2str(i),'_',num2str(j+1),')']];
+        reactions.forwardrate=[reactions.forwardrate;['mRNA_',genes(i).ID,'*Consumption_tl*1/3*R_width*elongrate_transl * y',num2str(i),'_',num2str(j),' * (1-y',num2str(i),'_',num2str(j+1),')']];
         reactions.backwardrate=[reactions.backwardrate;' '];
         reactionindex=reactionindex+1;
     end 
@@ -230,7 +230,7 @@ for i = 1:length(genes)
     reactions.educts=[reactions.educts;'AGTP + AA'];
     reactions.operators=[reactions.operators;'=>'];
     reactions.products=[reactions.products;' '];
-    reactions.forwardrate=[reactions.forwardrate;['mRNA_',genes(i).ID,'*Consumption_flag*1/3*R_width*elongrate_transl * y',num2str(i),'_',num2str(RNAslots(i))]];
+    reactions.forwardrate=[reactions.forwardrate;['mRNA_',genes(i).ID,'*Consumption_tl*1/3*R_width*elongrate_transl * y',num2str(i),'_',num2str(RNAslots(i))]];
     reactions.backwardrate=[reactions.backwardrate;' '];
     reactionindex=reactionindex+1;
     
