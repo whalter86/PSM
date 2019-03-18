@@ -11,6 +11,11 @@ function [statenames,statecodes]=createPSM(general,genes,varargin)
 % [modelstates,statecoding]=createPSM(general,genes,interactions)
 % [modelstates,statecoding]=createPSM(general,genes,interactions,inputs)
 % [modelstates,statecoding]=createPSM(general,genes,interactions,inputs,MN)
+%% check if IQMtools is installed
+IQMflag=exist('IQMmodel');
+if IQMflag ~=2
+    warning('IQMtools seems not to be installed. Won''t be able to run simulation')
+end
 
 switch nargin
     case 1
@@ -116,7 +121,6 @@ if warningflag
 end
 %% get basic gene data
 [geneproduction,states,parameters,variables,reactions,functions]=getGeneData(general,genes);
-% todo: energy/resource dependenc
 
 %% incorporate genetic interactions
 [parameters,variables,functions]=getInteractionData(parameters,variables,functions,interactions,genes);

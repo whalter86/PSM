@@ -30,10 +30,22 @@ for i = 1:length(interactions)
     funpnames=strjoin(interactions(i).ParamNames,',');
     funuwords=regexp(interactions(i).Fun,'\W?u\d*\W?','match');
     funuwords=unique( cellfun(@(x) regexp(x,'u\d*','match'),funuwords));
+    if length(funuwords)>1
+        error('Only one input variable is allowed for interactions at this time')
+    end
     fununames=strjoin(funuwords,',');
+    % check if pos or neg interaction
+    testfunstr=replace(interactions(i).Fun,funuwords,'1');
+    for k =1:length(interactionparamnames)
+        testfunstr=replace(testfunstr,interactions(i).ParamNames{k},num2str(interactions(i).ParamValues(k)));
+    end
+    funsign=sign(eval(testfunstr));
+    funval=['(',num2str(funsign),')*',interactions(i).Fun]; % forcing function positive
     functions.names=[functions.names;interactions(i).Identifier];
     functions.arguments=[functions.arguments;strjoin({fununames,'t',funpnames},',')];
-    functions.vals=[functions.vals;interactions(i).Fun];
+    functions.vals=[functions.vals;funval];
+    
+    
     
     % adapt variables
     if strcmp(interactions(i).Mode,'tx')
@@ -52,9 +64,29 @@ for i = 1:length(interactions)
     end
     varIndex=strcmp(variables.names,targetName);
     stringToVary=variables.vals{varIndex};
-    oldStr=regexp(stringToVary,'max\((.*?),0\)','tokens','once');
+    oldStr=regexp(stringToVary,'max\((.*),0\)','tokens','once');
     oldStr=oldStr{1};
-    newStr=[oldStr,' + ',interactions(i).Identifier,'(',strjoin({sourceName,'time',interactionparamnames},','),')'];
+    
+    multsplits=regexp(oldStr,'*','split');
+    addstr=regexp(multsplits{end},'\((.*)\)','tokens','once');
+    if isempty(addstr)
+        addstr=multsplits{end};
+    else
+        addstr=addstr{1};
+    end
+    multstrsingle={multsplits{1:end-1}};
+    newsubStr=[interactions(i).Identifier,'(',strjoin({sourceName,'time',interactionparamnames},','),')'];
+    if funsign<0
+        multstrsingle=[multstrsingle,newsubStr];
+    else
+        addstr=[addstr,' + ',newsubStr ];
+    end
+    if isempty(multstrsingle)
+        newStr=['(',addstr,')'];
+    else
+        newStr=[strjoin(multstrsingle,'*'),' * (',addstr,')'];
+    end
+    
     variedString=replace(stringToVary,oldStr,newStr);
     variables.vals{varIndex}=variedString;
 end

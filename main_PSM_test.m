@@ -56,16 +56,30 @@ g2.product           = 'P2';
 genes=[gBG,g1,g2];
 
 % genetic network interactions
+% sign in Fun field determines if interaction is assigned multiplicatively
+% or additively, e.g.
+% tx_init = phi_neg(...) * (tx_const + phi_pos(...))
+
 i1.Identifier = 'i1';
-i1.Source= 'g1'; % source gene
+i1.Source= 'g2'; % source gene
 i1.SourceType= 'Protein'; % Protein or mRNA
 i1.Target= 'g1'; % target gene
 i1.Mode= 'tx'; % 'tx' or 'tl' (for direct interactions between Proteins or mRNA, use metabolic network)
 i1.ParamNames={'k1'};
 i1.ParamValues=[.000001];
-i1.Fun='-k1 * u1';  %function in parameters and u1, u2 ,..., un 
+i1.Fun='k1 * u';  %function in parameters and u (where u stands for protein or mRNA input)
 
-interactions=[i1];
+
+i2.Identifier = 'i2';
+i2.Source= 'g1'; % source gene
+i2.SourceType= 'Protein'; % Protein or mRNA
+i2.Target= 'g1'; % target gene
+i2.Mode= 'tx'; % 'tx' or 'tl' (for direct interactions between Proteins or mRNA, use metabolic network)
+i2.ParamNames={'k1','V'};
+i2.ParamValues=[.000001,1];
+i2.Fun='- V * k1 / (k1+ u)';  %function in parameters and u (where u stands for protein or mRNA input)
+
+interactions=[i1,i2];
 
 % % Inputs
 u1.Identifier= 'u1';

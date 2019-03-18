@@ -41,10 +41,17 @@ for i = 1:length(inputs)
     
     varIndex=strcmp(variables.names,targetName);
     stringToVary=variables.vals{varIndex};
-    oldStr=regexp(stringToVary,'max\((.*?),0\)','tokens','once');
+    oldStr=regexp(stringToVary,'max\((.*),0\)','tokens','once');
     oldStr=oldStr{1};
-    newStr=[oldStr,' + ',inputs(i).Identifier,'(',strjoin({'time',inputparamnames},','),')'];
-    variedString=replace(stringToVary,oldStr,newStr);
+    multsplits=regexp(oldStr,'*','split');
+    oldaddStr=regexp(multsplits{end},'\((.*)\)','tokens','once');
+    if isempty(oldaddStr) % meaning no brackets are found, i.e. only constant init rate
+        oldaddStr=multsplits{end};
+    else
+        oldaddStr=oldaddStr{1};
+    end    
+    newaddStr=[oldaddStr,' + ',inputs(i).Identifier,'(',strjoin({'time',inputparamnames},','),')'];
+    variedString=replace(stringToVary,oldaddStr,newaddStr);
     variables.vals{varIndex}=variedString;
 end
 parameters.names=[parameters.names;newinputparamnames'];
